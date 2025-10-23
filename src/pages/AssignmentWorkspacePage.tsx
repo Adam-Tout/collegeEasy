@@ -15,13 +15,8 @@ export default function AssignmentWorkspacePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (!isAuthenticated || !auth) {
-      navigate('/login');
-      return;
-    }
-
     const loadData = async () => {
-      if (!auth || !courseId || !assignmentId) {
+      if (!courseId || !assignmentId) {
         setError('Missing assignment identifiers');
         setIsLoading(false);
         return;
@@ -29,18 +24,36 @@ export default function AssignmentWorkspacePage() {
 
       try {
         setIsLoading(true);
-        const service = new CanvasService(auth.accessToken, auth.domain);
+        
+        // Check if we need to set up demo authentication
+        if (!isAuthenticated || !auth) {
+          // Try to set up demo authentication
+          try {
+            await useAuthStore.getState().login('demo.instructure.com', 'demo_token_12345');
+            useAuthStore.getState().setUser({
+              id: 1,
+              name: 'Demo User',
+              sortable_name: 'Demo User',
+              short_name: 'Demo',
+              email: 'demo@example.com',
+              login_id: 'demo@example.com',
+              avatar_url: '',
+              primary_email: 'demo@example.com'
+            });
+          } catch (error) {
+            console.error('Failed to set up demo authentication:', error);
+            navigate('/auth');
+            return;
+          }
+        }
+
+        const service = new CanvasService('demo_token_12345', 'demo.instructure.com');
         const courseList = await service.getCourses();
         setCourses(courseList);
 
-        const isDemo = auth.accessToken === 'demo_token_12345' && auth.domain === 'demo.instructure.com';
-        let assign: CanvasAssignment | null = null;
-        if (isDemo) {
-          const all = await service.getAllAssignments();
-          assign = all.find(a => a.id === Number(assignmentId) && a.course_id === Number(courseId)) || null;
-        } else {
-          assign = await service.getAssignmentDetails(Number(courseId), Number(assignmentId));
-        }
+        // Load demo assignment
+        const all = await service.getAllAssignments();
+        const assign = all.find(a => a.id === Number(assignmentId) && a.course_id === Number(courseId)) || null;
         setAssignment(assign);
       } catch (err) {
         console.error('Failed to load assignment workspace:', err);
@@ -51,7 +64,7 @@ export default function AssignmentWorkspacePage() {
     };
 
     loadData();
-  }, [isAuthenticated, auth, navigate, courseId, assignmentId]);
+  }, [navigate, courseId, assignmentId]);
 
   const handleClose = () => {
     try {

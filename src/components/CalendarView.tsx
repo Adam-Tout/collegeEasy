@@ -9,7 +9,7 @@ interface CalendarViewProps {
 }
 
 export default function CalendarView({ assignments, onAssignmentClick }: CalendarViewProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [weekDates, setWeekDates] = useState<Date[]>([]);
 
   useEffect(() => {

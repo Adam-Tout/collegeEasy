@@ -30,7 +30,10 @@ export default function LoginPage() {
             useAuthStore.getState().setUser({
               id: 1,
               name: 'Demo User',
+              sortable_name: 'Demo User',
               short_name: 'Demo',
+              email: 'demo@example.com',
+              login_id: 'demo@example.com',
               avatar_url: '',
               primary_email: 'demo@example.com'
             })
@@ -88,7 +91,10 @@ export default function LoginPage() {
       useAuthStore.getState().setUser({
         id: 1,
         name: 'Demo User',
+        sortable_name: 'Demo User',
         short_name: 'Demo',
+        email: 'demo@example.com',
+        login_id: 'demo@example.com',
         avatar_url: '',
         primary_email: 'demo@example.com'
       })

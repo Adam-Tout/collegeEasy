@@ -14,8 +14,8 @@ export const demoUser: CanvasUser = {
 export const demoCourses: CanvasCourse[] = [
   {
     id: 101,
-    name: "English Literature",
-    course_code: "ENG101",
+    name: "Advanced Algorithms",
+    course_code: "CS401",
     start_at: "2024-01-15T00:00:00Z",
     end_at: "2024-05-15T23:59:59Z",
     workflow_state: "available",
@@ -23,8 +23,8 @@ export const demoCourses: CanvasCourse[] = [
   },
   {
     id: 102,
-    name: "Computer Science Fundamentals",
-    course_code: "CS101",
+    name: "Machine Learning Fundamentals",
+    course_code: "CS301",
     start_at: "2024-01-15T00:00:00Z",
     end_at: "2024-05-15T23:59:59Z",
     workflow_state: "available",
@@ -32,8 +32,26 @@ export const demoCourses: CanvasCourse[] = [
   },
   {
     id: 103,
-    name: "History of Art",
-    course_code: "ART201",
+    name: "Data Structures & Algorithms",
+    course_code: "CS201",
+    start_at: "2024-01-15T00:00:00Z",
+    end_at: "2024-05-15T23:59:59Z",
+    workflow_state: "available",
+    enrollment_term_id: 1
+  },
+  {
+    id: 104,
+    name: "Web Development",
+    course_code: "CS301",
+    start_at: "2024-01-15T00:00:00Z",
+    end_at: "2024-05-15T23:59:59Z",
+    workflow_state: "available",
+    enrollment_term_id: 1
+  },
+  {
+    id: 105,
+    name: "Database Systems",
+    course_code: "CS302",
     start_at: "2024-01-15T00:00:00Z",
     end_at: "2024-05-15T23:59:59Z",
     workflow_state: "available",
@@ -42,61 +60,134 @@ export const demoCourses: CanvasCourse[] = [
 ];
 
 export const demoAssignments: CanvasAssignment[] = [
+  // Today's assignments
   {
     id: 1001,
-    name: "Literary Analysis Essay",
-    description: "Write a 1000-word analysis of the themes in Shakespeare's Hamlet. Focus on the theme of revenge and how it drives the plot. Include at least 3 scholarly sources.",
-    due_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+    name: "Binary Tree Implementation",
+    description: "Implement a complete binary tree data structure in Python with insertion, deletion, and traversal methods. Include unit tests and documentation.",
+    due_at: new Date().toISOString(), // Today
     points_possible: 100,
-    course_id: 101,
-    html_url: "https://demo.instructure.com/courses/101/assignments/1001",
+    course_id: 103,
+    html_url: "https://demo.instructure.com/courses/103/assignments/1001",
     submission_types: ["online_text_entry", "online_upload"],
     has_submitted_submissions: false,
     submissions_download_url: ""
   },
   {
     id: 1002,
-    name: "Programming Assignment: Calculator",
-    description: "Create a simple calculator program in JavaScript that can perform basic arithmetic operations. Include error handling for invalid inputs.",
-    due_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
-    points_possible: 50,
-    course_id: 102,
-    html_url: "https://demo.instructure.com/courses/102/assignments/1002",
+    name: "React Component Library",
+    description: "Build a reusable component library with TypeScript. Include at least 5 components: Button, Input, Modal, Card, and Table. Use Storybook for documentation.",
+    due_at: new Date().toISOString(), // Today
+    points_possible: 150,
+    course_id: 104,
+    html_url: "https://demo.instructure.com/courses/104/assignments/1002",
     submission_types: ["online_text_entry", "online_upload"],
     has_submitted_submissions: false,
     submissions_download_url: ""
   },
+  
+  // Tomorrow's assignments
   {
     id: 1003,
-    name: "Art History Research Paper",
-    description: "Research and write about the influence of Renaissance art on modern architecture. Include at least 5 sources and provide visual examples.",
-    due_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-    points_possible: 150,
-    course_id: 103,
-    html_url: "https://demo.instructure.com/courses/103/assignments/1003",
+    name: "Neural Network from Scratch",
+    description: "Implement a simple neural network using only NumPy. Train it on the MNIST dataset and achieve at least 85% accuracy. Include visualization of training progress.",
+    due_at: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+    points_possible: 200,
+    course_id: 102,
+    html_url: "https://demo.instructure.com/courses/102/assignments/1003",
     submission_types: ["online_text_entry", "online_upload"],
     has_submitted_submissions: false,
     submissions_download_url: ""
   },
   {
     id: 1004,
-    name: "Code Review Exercise",
-    description: "Review the provided Python code and identify at least 3 potential improvements. Write a brief report explaining each suggestion.",
+    name: "Database Design Project",
+    description: "Design a normalized database schema for an e-commerce platform. Include ER diagrams, SQL DDL statements, and explain your design decisions.",
     due_at: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-    points_possible: 25,
+    points_possible: 120,
+    course_id: 105,
+    html_url: "https://demo.instructure.com/courses/105/assignments/1004",
+    submission_types: ["online_text_entry", "online_upload"],
+    has_submitted_submissions: false,
+    submissions_download_url: ""
+  },
+  
+  // This week's assignments
+  {
+    id: 1005,
+    name: "Algorithm Optimization Challenge",
+    description: "Optimize the given sorting algorithm to achieve O(n log n) time complexity. Compare performance with built-in sort functions and provide detailed analysis.",
+    due_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days
+    points_possible: 80,
+    course_id: 101,
+    html_url: "https://demo.instructure.com/courses/101/assignments/1005",
+    submission_types: ["online_text_entry", "online_upload"],
+    has_submitted_submissions: false,
+    submissions_download_url: ""
+  },
+  {
+    id: 1006,
+    name: "Full-Stack Web Application",
+    description: "Build a complete web application with React frontend, Node.js backend, and PostgreSQL database. Include authentication, CRUD operations, and deployment.",
+    due_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days
+    points_possible: 300,
+    course_id: 104,
+    html_url: "https://demo.instructure.com/courses/104/assignments/1006",
+    submission_types: ["online_text_entry", "online_upload"],
+    has_submitted_submissions: false,
+    submissions_download_url: ""
+  },
+  {
+    id: 1007,
+    name: "Machine Learning Model Deployment",
+    description: "Deploy a trained ML model using Docker and create a REST API. Include model versioning, monitoring, and A/B testing capabilities.",
+    due_at: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days
+    points_possible: 180,
     course_id: 102,
-    html_url: "https://demo.instructure.com/courses/102/assignments/1004",
-    submission_types: ["online_text_entry"],
+    html_url: "https://demo.instructure.com/courses/102/assignments/1007",
+    submission_types: ["online_text_entry", "online_upload"],
+    has_submitted_submissions: false,
+    submissions_download_url: ""
+  },
+  {
+    id: 1008,
+    name: "Distributed Systems Simulation",
+    description: "Simulate a distributed system with multiple nodes, message passing, and fault tolerance. Implement consensus algorithms and analyze performance.",
+    due_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days
+    points_possible: 250,
+    course_id: 101,
+    html_url: "https://demo.instructure.com/courses/101/assignments/1008",
+    submission_types: ["online_text_entry", "online_upload"],
+    has_submitted_submissions: false,
+    submissions_download_url: ""
+  },
+  {
+    id: 1009,
+    name: "Database Performance Tuning",
+    description: "Optimize a given database schema and queries. Use indexing, query optimization, and caching strategies. Provide before/after performance metrics.",
+    due_at: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(), // 6 days
+    points_possible: 140,
+    course_id: 105,
+    html_url: "https://demo.instructure.com/courses/105/assignments/1009",
+    submission_types: ["online_text_entry", "online_upload"],
+    has_submitted_submissions: false,
+    submissions_download_url: ""
+  },
+  {
+    id: 1010,
+    name: "Advanced Data Structures Project",
+    description: "Implement and compare multiple advanced data structures: B-trees, Red-Black trees, and Hash tables. Include performance benchmarks and use cases.",
+    due_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+    points_possible: 160,
+    course_id: 103,
+    html_url: "https://demo.instructure.com/courses/103/assignments/1010",
+    submission_types: ["online_text_entry", "online_upload"],
     has_submitted_submissions: false,
     submissions_download_url: ""
   }
 ];
 
-// Helper function to get demo data based on current date
+// Helper function to get demo data - always returns the same assignments
 export const getDemoAssignments = (): CanvasAssignment[] => {
-  const now = new Date();
-  return demoAssignments.map(assignment => ({
-    ...assignment,
-    due_at: new Date(now.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-  }));
+  return demoAssignments;
 };

@@ -6,6 +6,7 @@ export interface CanvasUser {
   email: string;
   login_id: string;
   avatar_url: string;
+  primary_email?: string; // Optional field for compatibility
 }
 
 export interface CanvasCourse {

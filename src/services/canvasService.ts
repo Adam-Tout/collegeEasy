@@ -91,26 +91,16 @@ export class CanvasService {
         title: assignment.name,
         context_name: demoCourses.find(c => c.id === assignment.course_id)?.name || 'Unknown Course',
         context_type: 'Course',
-        course_id: assignment.course_id,
-        plannable_id: assignment.id,
         plannable_type: 'assignment',
+        plannable_date: assignment.due_at || new Date().toISOString(),
         plannable: {
           id: assignment.id,
           title: assignment.name,
           points_possible: assignment.points_possible,
           due_at: assignment.due_at,
-          description: assignment.description,
         },
-        planner_override: null,
-        submissions: {
-          submitted: false,
-          excused: false,
-          graded: false,
-          late: false,
-          missing: false,
-          needs_grading: false,
-          has_feedback: false,
-        },
+        course_id: assignment.course_id,
+        html_url: assignment.html_url,
       }));
     }
     return this.makeRequest<PlannerItem[]>(`/planner/items?start_date=${startDate}&end_date=${endDate}&per_page=100`);
