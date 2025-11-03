@@ -225,7 +225,15 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-neutral-600">Productivity</p>
-                <p className="text-2xl font-bold text-green-600">+12%</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {(() => {
+                    const total = aiAssignments.length;
+                    if (!total) return '—';
+                    const submitted = aiAssignments.filter(a => a.has_submitted_submissions).length;
+                    const pct = Math.round((submitted / total) * 100);
+                    return `+${pct}%`;
+                  })()}
+                </p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg">
                 <TrendingUp className="h-6 w-6 text-green-600" />

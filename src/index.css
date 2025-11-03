@@ -116,7 +116,18 @@
 /* Cyberpunk/Tech Components */
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 hover:from-primary-400 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transform hover:scale-105;
+    @apply text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform;
+    background-image: linear-gradient(to right, var(--primary-500), var(--primary-600), var(--primary-700));
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  }
+  .btn-primary:hover {
+    background-image: linear-gradient(to right, var(--primary-400), var(--primary-600), var(--primary-800));
+    transform: scale(1.05);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  }
+  .btn-primary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-500);
   }
   
   .btn-secondary {
@@ -128,39 +139,80 @@
   }
   
   .btn-outline {
-    @apply border-2 border-primary-500 text-primary-600 font-semibold px-6 py-3 rounded-lg hover:bg-primary-500 hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transform hover:scale-105;
+    @apply border-2 font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform;
+    border-color: var(--primary-500);
+    color: var(--primary-600);
+  }
+  .btn-outline:hover {
+    background-color: var(--primary-500);
+    color: #ffffff;
+    transform: scale(1.05);
+  }
+  .btn-outline:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-500);
   }
   
   .card {
-    @apply bg-gradient-to-br from-white/90 via-primary-50/20 to-secondary-50/20 backdrop-blur-sm rounded-xl shadow-lg border border-primary-300/40 hover:shadow-2xl transition-all duration-300 hover:border-accent-400/60 hover:shadow-accent-500/25;
+    @apply backdrop-blur-sm rounded-xl shadow-lg border hover:shadow-2xl transition-all duration-300;
+    background-image: linear-gradient(to bottom right, rgba(255,255,255,0.9), rgba(240, 249, 255, 0.2), rgba(240, 253, 244, 0.2));
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+  .card:hover {
+    border-color: rgba(236, 72, 153, 0.6);
+    box-shadow: 0 25px 50px -12px rgba(236, 72, 153, 0.25);
   }
   
   .card-cyber {
-    @apply bg-gradient-to-br from-primary-100/30 via-accent-100/30 to-secondary-100/30 backdrop-blur-sm rounded-xl shadow-lg border border-primary-400/50 hover:shadow-2xl transition-all duration-300 hover:border-accent-500/70 hover:shadow-accent-500/35;
+    @apply backdrop-blur-sm rounded-xl shadow-lg border hover:shadow-2xl transition-all duration-300;
+    background-image: linear-gradient(to bottom right, rgba(239, 246, 255, 0.3), rgba(243, 232, 255, 0.3), rgba(236, 253, 245, 0.3));
+    border-color: rgba(59, 130, 246, 0.5);
+  }
+  .card-cyber:hover {
+    border-color: rgba(236, 72, 153, 0.7);
+    box-shadow: 0 25px 50px -12px rgba(236, 72, 153, 0.35);
   }
   
   .card-elevated {
-    @apply bg-gradient-to-br from-primary-200/40 via-accent-200/40 to-secondary-200/40 backdrop-blur-sm rounded-xl shadow-2xl border border-primary-500/50 hover:shadow-3xl transition-all duration-300 hover:border-accent-600/70 hover:shadow-accent-600/30;
+    @apply backdrop-blur-sm rounded-xl shadow-2xl border transition-all duration-300;
+    background-image: linear-gradient(to bottom right, rgba(191, 219, 254, 0.4), rgba(233, 213, 255, 0.4), rgba(187, 247, 208, 0.4));
+    border-color: rgba(59, 130, 246, 0.5);
+  }
+  .card-elevated:hover {
+    border-color: rgba(219, 39, 119, 0.7);
+    box-shadow: 0 35px 60px -12px rgba(219, 39, 119, 0.3);
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-white/90 backdrop-blur-sm;
+    @apply w-full px-4 py-3 border rounded-lg transition-all duration-200 bg-white/90 backdrop-blur-sm;
+    border-color: var(--neutral-300);
+  }
+  .input-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-500);
+    border-color: var(--primary-500);
   }
   
   .input-cyber {
-    @apply w-full px-4 py-3 border border-primary-300/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-white/90 backdrop-blur-sm placeholder-neutral-400;
+    @apply w-full px-4 py-3 border rounded-lg transition-all duration-200 bg-white/90 backdrop-blur-sm placeholder-neutral-400;
+    border-color: rgba(59, 130, 246, 0.5);
+  }
+  .input-cyber:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-500);
+    border-color: var(--primary-500);
   }
   
   .gradient-bg {
-    @apply bg-gradient-to-br from-primary-100/30 via-accent-100/20 to-secondary-100/30;
+    background-image: linear-gradient(to bottom right, rgba(239, 246, 255, 0.3), rgba(243, 232, 255, 0.2), rgba(236, 253, 245, 0.3));
   }
   
   .gradient-cyber {
-    @apply bg-gradient-to-br from-primary-200/40 via-accent-200/30 to-secondary-200/40;
+    background-image: linear-gradient(to bottom right, rgba(191, 219, 254, 0.4), rgba(233, 213, 255, 0.3), rgba(187, 247, 208, 0.4));
   }
   
   .gradient-rainbow {
-    @apply bg-gradient-to-br from-primary-300/30 via-accent-300/25 to-secondary-300/30;
+    background-image: linear-gradient(to bottom right, rgba(147, 197, 253, 0.3), rgba(216, 180, 254, 0.25), rgba(134, 239, 172, 0.3));
   }
   
   .glass-effect {
@@ -168,31 +220,42 @@
   }
   
   .glass-cyber {
-    @apply bg-gradient-to-br from-white/80 to-primary-50/30 backdrop-blur-md border border-primary-300/30 shadow-lg;
+    @apply backdrop-blur-md border shadow-lg;
+    background-image: linear-gradient(to bottom right, rgba(255,255,255,0.8), rgba(240, 249, 255, 0.3));
+    border-color: rgba(59, 130, 246, 0.3);
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-primary-600 via-accent-600 to-secondary-600 bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, var(--primary-600), var(--accent-600), var(--secondary-600));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   
   .text-cyber {
-    @apply bg-gradient-to-r from-primary-700 via-accent-700 to-secondary-700 bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, var(--primary-700), var(--accent-700), var(--secondary-700));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   
   .text-rainbow {
-    @apply bg-gradient-to-r from-primary-500 via-accent-500 via-secondary-500 via-primary-600 to-accent-600 bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, var(--primary-500), var(--accent-500), var(--secondary-500), var(--primary-600), var(--accent-600));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   
   .neon-glow {
-    @apply shadow-lg shadow-primary-500/25;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1), 0 0 0 0 rgba(59, 130, 246, 0.25);
   }
   
   .neon-glow-green {
-    @apply shadow-lg shadow-secondary-500/25;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1), 0 0 0 0 rgba(34, 197, 94, 0.25);
   }
   
   .neon-glow-purple {
-    @apply shadow-lg shadow-accent-500/25;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1), 0 0 0 0 rgba(168, 85, 247, 0.25);
   }
 }
 
@@ -328,26 +391,47 @@
 
 /* Focus States */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-500);
 }
 
 /* Cyberpunk Status Indicators */
 .status-success {
-  @apply bg-success-50 text-success-600 border border-success-500 shadow-lg shadow-success-500/25;
+  @apply border shadow-lg;
+  background-color: var(--success-50);
+  color: var(--success-600);
+  border-color: var(--success-500);
+  box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.25);
 }
 
 .status-warning {
-  @apply bg-warning-50 text-warning-600 border border-warning-500 shadow-lg shadow-warning-500/25;
+  @apply border shadow-lg;
+  background-color: var(--warning-50);
+  color: var(--warning-600);
+  border-color: var(--warning-500);
+  box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.25);
 }
 
 .status-error {
-  @apply bg-error-50 text-error-600 border border-error-500 shadow-lg shadow-error-500/25;
+  @apply border shadow-lg;
+  background-color: var(--error-50);
+  color: var(--error-600);
+  border-color: var(--error-500);
+  box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.25);
 }
 
 .status-cyber {
-  @apply bg-gradient-to-r from-primary-50/80 to-accent-50/80 text-primary-600 border border-primary-300/50 shadow-lg shadow-primary-500/25;
+  @apply border shadow-lg;
+  background-image: linear-gradient(to right, rgba(240, 249, 255, 0.8), rgba(250, 245, 255, 0.8));
+  color: var(--primary-600);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.25);
 }
 
 .status-matrix {
-  @apply bg-gradient-to-r from-secondary-50/80 to-success-50/80 text-secondary-600 border border-secondary-300/50 shadow-lg shadow-secondary-500/25;
+  @apply border shadow-lg;
+  background-image: linear-gradient(to right, rgba(240, 253, 244, 0.8), rgba(240, 253, 244, 0.8));
+  color: var(--secondary-600);
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.25);
 }

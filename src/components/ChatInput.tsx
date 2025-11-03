@@ -44,8 +44,23 @@ export default function ChatInput({ onSendMessage, isLoading, placeholder = "Sta
           className={`px-4 py-2 rounded-md text-sm font-medium flex items-center ${
             isLoading || !inputMessage.trim()
               ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
-              : 'bg-primary-600 text-white hover:bg-primary-700'
+              : 'text-white'
           }`}
+          style={
+            isLoading || !inputMessage.trim()
+              ? undefined
+              : { backgroundColor: 'var(--primary-600)' }
+          }
+          onMouseEnter={(e) => {
+            if (!(isLoading || !inputMessage.trim())) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary-700)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!(isLoading || !inputMessage.trim())) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary-600)';
+            }
+          }}
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />

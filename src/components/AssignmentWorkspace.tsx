@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X, FileText, Code } from 'lucide-react';
 import DocumentEditor from './DocumentEditor';
 import CodeEditor from './CodeEditor';
@@ -121,10 +121,10 @@ export default function AssignmentWorkspace({ assignment, isOpen, onClose, cours
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+        {/* Content - resizable panes */}
+        <div className="flex-1 overflow-hidden flex">
           {/* Left: Editor with instructions */}
-          <div className="flex-1 overflow-y-auto">
+          <ResizablePane>
             {activeTab === 'document' ? (
               <DocumentEditor
                 assignmentTitle={assignment.name}
@@ -146,10 +146,10 @@ export default function AssignmentWorkspace({ assignment, isOpen, onClose, cours
                 onCodeChange={(code) => setWorkInProgress(code)}
               />
             )}
-          </div>
+          </ResizablePane>
 
           {/* Right: AI Assistant with assignment-aware context */}
-          <div className="border-l border-gray-200 h-full">
+          <div className="border-l border-gray-200 h-full flex-1 min-w-[260px]">
             <ChatInterface 
               assignments={[currentAssignmentInfo]}
               courses={courses.map(c => ({ id: c.id, name: c.name, course_code: c.course_code }))}
@@ -160,6 +160,46 @@ export default function AssignmentWorkspace({ assignment, isOpen, onClose, cours
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Simple horizontal resizable pane wrapper
+function ResizablePane({ children }: { children: React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [widthPct, setWidthPct] = useState<number>(50);
+  const draggingRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!draggingRef.current || !containerRef.current?.parentElement) return;
+      const parent = containerRef.current.parentElement;
+      const rect = parent.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const pct = Math.min(80, Math.max(20, (x / rect.width) * 100));
+      setWidthPct(pct);
+    };
+    const onUp = () => { draggingRef.current = false; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="h-full flex items-stretch" style={{ width: `${widthPct}%` }}>
+      <div className="flex-1 overflow-y-auto">
+        {children}
+      </div>
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        title="Drag to resize"
+        onMouseDown={() => { draggingRef.current = true; }}
+        className="w-1 cursor-col-resize bg-gray-200 hover:bg-gray-300 active:bg-gray-400"
+      />
     </div>
   );
 }

@@ -1,8 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 
-export default {
+module.exports = {
   darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  safelist: [
+    {
+      pattern: /(from|via|to)-(primary|secondary|accent)-(50|100|200|300|400|500|600|700|800|900)/,
+      variants: ['hover'],
+    },
+    {
+      pattern: /shadow-(primary|secondary|accent)-(50|100|200|300|400|500|600|700|800|900)\/\d{1,3}/,
+    },
+    {
+      pattern: /(border|text|bg)-(primary|secondary|accent)-(50|100|200|300|400|500|600|700|800|900)/,
+      variants: ['hover', 'focus'],
+    },
+  ],
   theme: {
     container: {
       center: true,

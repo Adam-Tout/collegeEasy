@@ -39,8 +39,12 @@ export default function ChatInterface({
     if (saved) {
       try {
         const parsed: ChatMessage[] = JSON.parse(saved);
-        setMessages(parsed);
-        aiService.hydrateMessages(parsed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          aiService.hydrateMessages(parsed);
+        } else {
+          initializeWelcomeMessage();
+        }
       } catch {
         initializeWelcomeMessage();
       }
