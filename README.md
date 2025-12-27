@@ -8,6 +8,7 @@ A sophisticated, AI-powered Canvas LMS integration that helps students manage as
 - **Secure Authentication**: Email/password registration and login
 - **Profile Management**: Update personal information and preferences
 - **Multi-Canvas Support**: Connect multiple Canvas accounts per user
+- **Demo Mode**: Try the app with sample assignments without Canvas API connection
 
 ### 🎨 Sophisticated UI/UX
 - **Modern Design System**: Sophisticated color palette with gradients and animations
@@ -16,16 +17,19 @@ A sophisticated, AI-powered Canvas LMS integration that helps students manage as
 - **Smooth Animations**: Fade-in, slide-in, and pulse animations for better UX
 
 ### 🤖 AI-Powered Assistance
-- **Intelligent Chat Interface**: Context-aware AI assistant for assignment help
+- **Intelligent Chat Interface**: Context-aware AI assistant powered by GPT-4.1-nano
 - **Document Analysis**: Upload PDFs and text files for AI analysis
 - **Exam Date Detection**: Automatically extract exam dates from syllabi
 - **Study Planning**: Get personalized study recommendations
+- **Demo Mode Support**: Works with demo data when API key is not configured
 
 ### 📅 Assignment Management
 - **7-Day Calendar View**: Visual assignment calendar with color-coded urgency
+- **Clickable Assignments**: Click any assignment to view details in workspace
 - **Assignment Workspaces**: Dedicated spaces for writing and coding assignments
 - **Monaco Editor**: Full-featured code editor with syntax highlighting
 - **Document Editor**: Rich text editor for writing assignments
+- **Demo Assignments**: 10 sample assignments available for testing UI/UX
 
 ### 💳 Subscription System
 - **Multiple Plans**: Free, Basic, Premium, and Enterprise tiers
@@ -38,7 +42,7 @@ A sophisticated, AI-powered Canvas LMS integration that helps students manage as
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
-- OpenAI API key (for AI features)
+- OpenAI API key (optional - app works in demo mode without it)
 
 ### Installation
 
@@ -54,24 +58,41 @@ A sophisticated, AI-powered Canvas LMS integration that helps students manage as
    ```
 
 3. **Set up environment variables**
+   
+   The `.env` file should already exist (created from `env.example`). If not, create it:
    ```bash
    cp env.example .env
    ```
    
-   Edit `.env` with your configuration:
+   Edit `.env` and add your OpenAI API key on **line 7**:
    ```env
-   VITE_OPENAI_API_KEY=your_openai_api_key_here
-   VITE_API_URL=http://localhost:3001/api
-   VITE_APP_NAME=Canvas AI Assistant
+   VITE_OPENAI_API_KEY=sk-proj-your-actual-key-here
    ```
+   
+   **Note**: The app works in demo mode without an API key, but AI features will use pre-defined responses instead of real AI.
 
 4. **Start development server**
    ```bash
    npm run dev
    ```
+   
+   If `npm` is not recognized, you may need to refresh your terminal or use the full path:
+   ```bash
+   & "C:\Program Files\nodejs\npm.cmd" run dev
+   ```
 
 5. **Open your browser**
-   Navigate to `http://localhost:5173`
+   Navigate to `http://localhost:5173` (or the port shown in terminal)
+
+### Demo Mode
+
+The app includes a **demo mode** that works without Canvas API or OpenAI API keys:
+- **Demo User**: Login with `demo@example.com` / `demo123`
+- **Demo Assignments**: 10 sample assignments across 5 courses
+- **Clickable Assignments**: Click any assignment in the calendar to view it in the workspace
+- **Demo AI**: Pre-defined responses when OpenAI API key is not configured
+
+This allows you to test and develop the UI/UX without needing API connections.
 
 ## 🏗️ Architecture
 
@@ -83,6 +104,7 @@ A sophisticated, AI-powered Canvas LMS integration that helps students manage as
 - **React Router** for navigation
 - **Monaco Editor** for code editing
 - **PDF.js** for document parsing
+- **OpenAI SDK** for AI features (GPT-4.1-nano-2025-04-14)
 
 ### Design System
 - **Primary Colors**: Deep blue theme (#2563eb)
@@ -95,21 +117,28 @@ A sophisticated, AI-powered Canvas LMS integration that helps students manage as
 ```
 src/
 ├── components/          # Reusable UI components
+│   ├── AssignmentWorkspace.tsx
+│   ├── CalendarView.tsx
 │   ├── ChatInterface.tsx
 │   ├── ChatMessage.tsx
 │   ├── ChatInput.tsx
+│   ├── CodeEditor.tsx
 │   ├── DocumentAttachment.tsx
-│   └── CalendarView.tsx
+│   └── DocumentEditor.tsx
 ├── pages/              # Route components
 │   ├── AuthPage.tsx
 │   ├── DashboardPage.tsx
-│   └── SettingsPage.tsx
+│   ├── SettingsPage.tsx
+│   ├── AssignmentWorkspacePage.tsx
+│   └── ConnectionTest.tsx
 ├── stores/             # State management
 │   ├── userStore.ts
 │   └── authStore.ts
 ├── services/           # API services
-│   ├── aiService.ts
-│   └── canvasService.ts
+│   ├── aiService.ts    # OpenAI integration (GPT-4.1-nano)
+│   └── canvasService.ts # Canvas API integration with demo mode
+├── data/               # Demo data
+│   └── demoData.ts     # Sample courses and assignments
 ├── types/              # TypeScript definitions
 │   ├── user.ts
 │   └── canvas.ts
@@ -120,13 +149,15 @@ src/
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VITE_OPENAI_API_KEY` | OpenAI API key for AI features | Yes |
-| `VITE_API_URL` | Backend API URL | Yes |
-| `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID | No |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | No |
-| `VITE_DEBUG` | Enable debug logging | No |
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `VITE_OPENAI_API_KEY` | OpenAI API key for AI features (uses GPT-4.1-nano-2025-04-14) | No* | Demo mode |
+| `VITE_API_URL` | Backend API URL | No | `http://localhost:3001/api` |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID | No | - |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | No | - |
+| `VITE_DEBUG` | Enable debug logging | No | `false` |
+
+\* *Required for real AI features. App works in demo mode without it.*
 
 ### Canvas Integration
 
@@ -142,6 +173,8 @@ src/
    - Paste your access token
    - Click "Add Account"
 
+**Note**: You can use the app without Canvas integration! The demo mode includes sample assignments that you can click and interact with to test the UI/UX.
+
 ## 🚀 Deployment
 
 ### Build for Production
@@ -149,6 +182,8 @@ src/
 ```bash
 npm run build
 ```
+
+The production build will be in the `dist/` directory.
 
 ### Deploy to Vercel
 
@@ -214,11 +249,6 @@ npm run build
 
 ## 🧪 Testing
 
-### Run Tests
-```bash
-npm run test
-```
-
 ### Lint Code
 ```bash
 npm run lint
@@ -227,6 +257,16 @@ npm run lint
 ### Type Check
 ```bash
 npm run check
+```
+
+### Build for Production
+```bash
+npm run build
+```
+
+### Preview Production Build
+```bash
+npm run preview
 ```
 
 ## 📊 Performance
@@ -256,41 +296,59 @@ npm run check
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
+## 🐛 Troubleshooting
+
+### npm command not recognized
+If you get `npm is not recognized`, you may need to:
+1. Restart your terminal/PowerShell
+2. Or use the full path: `& "C:\Program Files\nodejs\npm.cmd" run dev`
+
+### AI responses are too quick
+- Check browser console (F12) for API logs
+- Verify `VITE_OPENAI_API_KEY` is set in `.env` file
+- If using demo mode, responses will be instant (this is expected)
+- Real API calls take 1-3 seconds and show detailed logs in console
+
+### Demo assignments not clickable
+- Make sure you're logged in (use demo credentials: `demo@example.com` / `demo123`)
+- Check that you're viewing assignments in the calendar view
+- Assignments should navigate to `/workspace/{courseId}/{assignmentId}` when clicked
+
 ## 🆘 Support
 
 ### Documentation
-- [API Documentation](docs/api.md)
-- [Component Library](docs/components.md)
-- [Deployment Guide](docs/deployment.md)
+- Check browser console for detailed API logs
+- Demo mode works without any API keys
+- All AI API calls are logged to console for debugging
 
 ### Community
 - [GitHub Discussions](https://github.com/Adam-Tout/collegeEasy/discussions)
 - [Issue Tracker](https://github.com/Adam-Tout/collegeEasy/issues)
 
-### Contact
-- Email: support@canvas-ai-assistant.com
-- Twitter: [@CanvasAI](https://twitter.com/canvas-ai)
-
 ## 🎯 Roadmap
 
-### Phase 1 (Current)
+### Phase 1 (Current) ✅
 - ✅ User authentication system
-- ✅ Canvas integration
-- ✅ AI chat interface
-- ✅ Assignment calendar
+- ✅ Canvas integration with demo mode fallback
+- ✅ AI chat interface (GPT-4.1-nano)
+- ✅ Assignment calendar with clickable assignments
+- ✅ Assignment workspaces (code & document editors)
 - ✅ Subscription system
+- ✅ Demo data for UI/UX development
 
-### Phase 2 (Next)
+### Phase 2 (Next) 🔄
 - 🔄 Real-time collaboration
 - 🔄 Mobile app (React Native)
 - 🔄 Advanced analytics
 - 🔄 Team management
+- 🔄 Assignment submission tracking
 
-### Phase 3 (Future)
+### Phase 3 (Future) 📋
 - 📋 AI-powered study plans
 - 📋 Grade prediction
-- 📋 Integration with other LMS
+- 📋 Integration with other LMS platforms
 - 📋 Enterprise features
+- 📋 Offline mode support
 
 ---
 

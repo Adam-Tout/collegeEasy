@@ -3,11 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AssignmentWorkspace from '../components/AssignmentWorkspace';
 import { CanvasAssignment, CanvasCourse } from '../types/canvas';
 import { useAuthStore } from '../stores/authStore';
+import { useUserStore } from '../stores/userStore';
 import { CanvasService } from '../services/canvasService';
 
 export default function AssignmentWorkspacePage() {
   const navigate = useNavigate();
   const { isAuthenticated, auth } = useAuthStore();
+  const { user } = useUserStore();
   const { courseId, assignmentId } = useParams();
   const [courses, setCourses] = useState<CanvasCourse[]>([]);
   const [assignment, setAssignment] = useState<CanvasAssignment | null>(null);
@@ -15,6 +17,20 @@ export default function AssignmentWorkspacePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const loadDemoData = async () => {
+      const service = new CanvasService('demo_token_12345', 'demo.instructure.com');
+      const courseList = await service.getCourses();
+      setCourses(courseList);
+      try {
+        const detail = await service.getAssignmentDetails(Number(courseId), Number(assignmentId));
+        setAssignment(detail);
+      } catch (err) {
+        // If assignment not found in demo data, show error
+        setError(`Demo assignment not found. Course ID: ${courseId}, Assignment ID: ${assignmentId}`);
+        console.error('Demo assignment not found:', err);
+      }
+    };
+
     const loadData = async () => {
       if (!courseId || !assignmentId) {
         setError('Missing assignment identifiers');
@@ -22,30 +38,34 @@ export default function AssignmentWorkspacePage() {
         return;
       }
 
+      // Check if user is authenticated (for app access)
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
       try {
         setIsLoading(true);
 
-        if (!isAuthenticated || !auth) {
-          navigate('/login');
-          return;
-        }
-
-        // Try using real Canvas credentials first
-        let service = new CanvasService(auth.accessToken, auth.domain);
-        try {
-          const courseList = await service.getCourses();
-          setCourses(courseList);
-          const detail = await service.getAssignmentDetails(Number(courseId), Number(assignmentId));
-          setAssignment(detail);
-        } catch (realErr) {
-          console.warn('[Workspace] Falling back to demo data due to error:', realErr);
-          // Fallback to demo data if Canvas API blocked (CORS) or fails
-          service = new CanvasService('demo_token_12345', 'demo.instructure.com');
-          const courseList = await service.getCourses();
-          setCourses(courseList);
-          const all = await service.getAllAssignments();
-          const assign = all.find(a => a.id === Number(assignmentId) && a.course_id === Number(courseId)) || null;
-          setAssignment(assign);
+        // Check if user has active Canvas account
+        const activeCanvasAccount = user.canvasAccounts?.find(acc => acc.isActive);
+        
+        if (activeCanvasAccount && isAuthenticated && auth) {
+          // Try using real Canvas credentials first
+          try {
+            const service = new CanvasService(auth.accessToken, auth.domain);
+            const courseList = await service.getCourses();
+            setCourses(courseList);
+            const detail = await service.getAssignmentDetails(Number(courseId), Number(assignmentId));
+            setAssignment(detail);
+          } catch (realErr) {
+            console.warn('[Workspace] Falling back to demo data due to error:', realErr);
+            // Fallback to demo data if Canvas API blocked (CORS) or fails
+            await loadDemoData();
+          }
+        } else {
+          // No Canvas account or not authenticated - use demo data
+          await loadDemoData();
         }
       } catch (err) {
         console.error('Failed to load assignment workspace:', err);
@@ -56,7 +76,7 @@ export default function AssignmentWorkspacePage() {
     };
 
     loadData();
-  }, [navigate, courseId, assignmentId, isAuthenticated, auth]);
+  }, [navigate, courseId, assignmentId, isAuthenticated, auth, user]);
 
   const handleClose = () => {
     try {
@@ -66,7 +86,8 @@ export default function AssignmentWorkspacePage() {
     }
   };
 
-  if (!isAuthenticated) return null;
+  // Allow access if user is authenticated (even without Canvas auth for demo mode)
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">

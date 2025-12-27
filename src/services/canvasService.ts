@@ -114,6 +114,14 @@ export class CanvasService {
   }
 
   async getAssignmentDetails(courseId: number, assignmentId: number): Promise<CanvasAssignment> {
+    if (this.isDemoMode) {
+      const assignments = getDemoAssignments();
+      const assignment = assignments.find(a => a.id === assignmentId && a.course_id === courseId);
+      if (!assignment) {
+        throw new Error(`Demo assignment ${assignmentId} not found in course ${courseId}`);
+      }
+      return assignment;
+    }
     return this.makeRequest<CanvasAssignment>(`/courses/${courseId}/assignments/${assignmentId}`);
   }
 

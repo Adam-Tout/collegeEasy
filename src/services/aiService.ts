@@ -3,10 +3,19 @@ import { demoCourses, getDemoAssignments } from '../data/demoData';
 
 // Use environment variable for API key. Never hard-code secrets in source code.
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-const openai = apiKey ? new OpenAI({
-  apiKey,
+const hasApiKey = apiKey && apiKey.trim() !== '' && apiKey !== 'your_openai_api_key_here';
+const openai = hasApiKey ? new OpenAI({
+  apiKey: apiKey!,
   dangerouslyAllowBrowser: true,
 }) : null;
+
+// Log API key status on module load
+if (hasApiKey) {
+  console.log('[AIService] OpenAI API key found - API calls will be made to OpenAI');
+} else {
+  console.warn('[AIService] No valid OpenAI API key found - will use demo responses');
+  console.warn('[AIService] To enable real AI, set VITE_OPENAI_API_KEY in your .env file');
+}
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -121,29 +130,69 @@ Always be encouraging and helpful. If you don't have specific information about 
     }
 
     if (!openai) {
-      return this.generateDemoResponse(userMessage);
+      console.log('[AIService] ========================================');
+      console.log('[AIService] DEMO MODE - No OpenAI API key configured');
+      console.log('[AIService] User message:', userMessage);
+      console.log('[AIService] Generating demo response (instant)...');
+      const demoResponse = this.generateDemoResponse(userMessage);
+      console.log('[AIService] Demo response:', demoResponse);
+      console.log('[AIService] ========================================');
+      return demoResponse;
     }
 
     try {
+      console.log('[AIService] ========================================');
+      console.log('[AIService] REAL API MODE - Making OpenAI API call...');
+      console.log('[AIService] Request details:', {
+        model: 'gpt-4.1-nano-2025-04-14',
+        messageCount: this.messages.length,
+        userMessage: userMessage.substring(0, 100) + (userMessage.length > 100 ? '...' : ''),
+        hasContext: !!this.context.courses || !!this.context.assignments || !!this.context.currentAssignment
+      });
+      
+      const startTime = Date.now();
       const completion = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4.1-nano-2025-04-14',
         messages: this.messages,
         max_tokens: 500,
         temperature: 0.7,
       });
+      const duration = Date.now() - startTime;
 
       const assistantMessage = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+      
+      console.log('[AIService] ✅ OpenAI API response received:');
+      console.log('[AIService] Duration:', `${duration}ms`);
+      console.log('[AIService] Response length:', assistantMessage.length, 'characters');
+      console.log('[AIService] Full response:', assistantMessage);
+      console.log('[AIService] Usage:', completion.usage ? {
+        promptTokens: completion.usage.prompt_tokens,
+        completionTokens: completion.usage.completion_tokens,
+        totalTokens: completion.usage.total_tokens
+      } : 'N/A');
+      console.log('[AIService] Model:', completion.model);
+      console.log('[AIService] Finish reason:', completion.choices[0]?.finish_reason);
+      console.log('[AIService] ========================================');
+      
       this.messages.push({ role: 'assistant', content: assistantMessage });
       
       return assistantMessage;
-    } catch (error) {
-      console.error('OpenAI API error:', error);
+    } catch (error: any) {
+      console.error('[AIService] ========================================');
+      console.error('[AIService] ❌ OpenAI API ERROR:');
+      console.error('[AIService] Message:', error?.message || 'Unknown error');
+      console.error('[AIService] Status:', error?.status || error?.response?.status || 'N/A');
+      console.error('[AIService] Status Text:', error?.statusText || error?.response?.statusText || 'N/A');
+      console.error('[AIService] Full error:', error);
+      console.error('[AIService] Falling back to demo response due to API error');
+      console.error('[AIService] ========================================');
       // Fallback to demo response if API fails
       return this.generateDemoResponse(userMessage);
     }
   }
 
   private generateDemoResponse(userMessage: string): string {
+    console.log('[AIService] Generating demo response for:', userMessage.substring(0, 100));
     const message = userMessage.toLowerCase();
 
     // If asking about courses or tests/exams
