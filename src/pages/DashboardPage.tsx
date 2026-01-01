@@ -93,8 +93,8 @@ export default function DashboardPage() {
   };
 
   const handleAssignmentClick = (assignment: CanvasAssignment) => {
-    // Navigate to assignment workspace - the workspace page will handle demo data
-    navigate(`/workspace/${assignment.course_id}/${assignment.id}`);
+    // Open assignment workspace in a new tab - the workspace page will handle demo data
+    window.open(`/workspace/${assignment.course_id}/${assignment.id}`, '_blank');
   };
 
   const handleLogout = () => {

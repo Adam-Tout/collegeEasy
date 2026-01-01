@@ -1,20 +1,18 @@
-import OpenAI from 'openai';
 import { demoCourses, getDemoAssignments } from '../data/demoData';
 
-// Use environment variable for API key. Never hard-code secrets in source code.
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-const hasApiKey = apiKey && apiKey.trim() !== '' && apiKey !== 'your_openai_api_key_here';
-const openai = hasApiKey ? new OpenAI({
-  apiKey: apiKey!,
-  dangerouslyAllowBrowser: true,
-}) : null;
+// Get API endpoint from environment variable or use default
+// In production, this should point to your Vercel deployment
+// In development, it will use the local Vercel dev server or proxy
+const API_URL = import.meta.env.VITE_API_URL || '/api/chat';
+const USE_BACKEND_API = import.meta.env.VITE_USE_BACKEND_API !== 'false'; // Default to true
 
-// Log API key status on module load
-if (hasApiKey) {
-  console.log('[AIService] OpenAI API key found - API calls will be made to OpenAI');
+// Log API configuration on module load
+if (USE_BACKEND_API) {
+  console.log('[AIService] Using backend API endpoint:', API_URL);
+  console.log('[AIService] API calls will be made to secure backend server');
 } else {
-  console.warn('[AIService] No valid OpenAI API key found - will use demo responses');
-  console.warn('[AIService] To enable real AI, set VITE_OPENAI_API_KEY in your .env file');
+  console.warn('[AIService] Backend API disabled - will use demo responses');
+  console.warn('[AIService] To enable real AI, ensure backend API is deployed and VITE_USE_BACKEND_API is not set to false');
 }
 
 export interface ChatMessage {
@@ -129,9 +127,9 @@ Always be encouraging and helpful. If you don't have specific information about 
       });
     }
 
-    if (!openai) {
+    if (!USE_BACKEND_API) {
       console.log('[AIService] ========================================');
-      console.log('[AIService] DEMO MODE - No OpenAI API key configured');
+      console.log('[AIService] DEMO MODE - Backend API disabled');
       console.log('[AIService] User message:', userMessage);
       console.log('[AIService] Generating demo response (instant)...');
       const demoResponse = this.generateDemoResponse(userMessage);
@@ -142,36 +140,48 @@ Always be encouraging and helpful. If you don't have specific information about 
 
     try {
       console.log('[AIService] ========================================');
-      console.log('[AIService] REAL API MODE - Making OpenAI API call...');
+      console.log('[AIService] REAL API MODE - Making backend API call...');
       console.log('[AIService] Request details:', {
-        model: 'gpt-4.1-nano-2025-04-14',
+        endpoint: API_URL,
+        model: 'gpt-4o-mini',
         messageCount: this.messages.length,
         userMessage: userMessage.substring(0, 100) + (userMessage.length > 100 ? '...' : ''),
         hasContext: !!this.context.courses || !!this.context.assignments || !!this.context.currentAssignment
       });
       
       const startTime = Date.now();
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4.1-nano-2025-04-14',
-        messages: this.messages,
-        max_tokens: 500,
-        temperature: 0.7,
+      
+      // Call backend API instead of OpenAI directly
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: this.messages,
+          model: 'gpt-4o-mini', // Using a more standard model name
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
       });
+
       const duration = Date.now() - startTime;
 
-      const assistantMessage = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const assistantMessage = data.message || 'Sorry, I could not generate a response.';
       
-      console.log('[AIService] ✅ OpenAI API response received:');
+      console.log('[AIService] ✅ Backend API response received:');
       console.log('[AIService] Duration:', `${duration}ms`);
       console.log('[AIService] Response length:', assistantMessage.length, 'characters');
       console.log('[AIService] Full response:', assistantMessage);
-      console.log('[AIService] Usage:', completion.usage ? {
-        promptTokens: completion.usage.prompt_tokens,
-        completionTokens: completion.usage.completion_tokens,
-        totalTokens: completion.usage.total_tokens
-      } : 'N/A');
-      console.log('[AIService] Model:', completion.model);
-      console.log('[AIService] Finish reason:', completion.choices[0]?.finish_reason);
+      console.log('[AIService] Usage:', data.usage || 'N/A');
+      console.log('[AIService] Model:', data.model || 'N/A');
+      console.log('[AIService] Finish reason:', data.finish_reason || 'N/A');
       console.log('[AIService] ========================================');
       
       this.messages.push({ role: 'assistant', content: assistantMessage });
@@ -179,10 +189,8 @@ Always be encouraging and helpful. If you don't have specific information about 
       return assistantMessage;
     } catch (error: any) {
       console.error('[AIService] ========================================');
-      console.error('[AIService] ❌ OpenAI API ERROR:');
+      console.error('[AIService] ❌ Backend API ERROR:');
       console.error('[AIService] Message:', error?.message || 'Unknown error');
-      console.error('[AIService] Status:', error?.status || error?.response?.status || 'N/A');
-      console.error('[AIService] Status Text:', error?.statusText || error?.response?.statusText || 'N/A');
       console.error('[AIService] Full error:', error);
       console.error('[AIService] Falling back to demo response due to API error');
       console.error('[AIService] ========================================');

@@ -8,6 +8,9 @@ export default defineConfig({
   build: {
     sourcemap: 'hidden',
   },
+  optimizeDeps: {
+    include: ['html2pdf.js'],
+  },
   server: {
     proxy: {
       '/canvas': {
