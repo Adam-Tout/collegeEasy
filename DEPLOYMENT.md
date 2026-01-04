@@ -1,257 +1,431 @@
-# Deployment Guide: Secure AI Backend with Vercel
+# 🚀 Deployment Guide
 
-This guide will walk you through deploying your AI assistant with a secure backend API using Vercel serverless functions.
+Complete guide for deploying the Canvas AI Assistant frontend and backend.
 
-## 🎯 Why This Approach?
+---
 
-**Before (Insecure):**
-- OpenAI API key stored in frontend code
-- Exposed to anyone who inspects your website
-- Security risk and potential cost abuse
+## 📋 Table of Contents
 
-**After (Secure):**
-- API key stored securely on Vercel server
-- Never exposed to frontend
-- Rate limiting and security controls possible
-- Professional production-ready setup
+1. [Overview](#overview)
+2. [Backend Deployment](#backend-deployment)
+3. [Frontend Deployment](#frontend-deployment)
+4. [Environment Variables](#environment-variables)
+5. [Connecting Frontend to Backend](#connecting-frontend-to-backend)
+6. [Verification](#verification)
+7. [Troubleshooting](#troubleshooting)
 
-## 📋 Prerequisites
+---
 
-1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com) (free tier is sufficient)
-2. **OpenAI API Key**: Get one from [platform.openai.com](https://platform.openai.com/api-keys)
-3. **Node.js 18+**: Already installed for development
-4. **Git Repository**: Your code should be in a Git repo (GitHub, GitLab, or Bitbucket)
+## 📖 Overview
 
-## 🚀 Step-by-Step Deployment
+This project consists of two separate deployments:
 
-### Step 1: Install Vercel CLI (Optional but Recommended)
+1. **Frontend** - React + Vite application (deployed to Vercel/Netlify/etc.)
+2. **Backend** - Vercel serverless functions (separate Vercel project: `vercel_agents_canvas_bkend`)
+
+The backend securely handles OpenAI API calls, keeping your API key server-side.
+
+---
+
+## 🔧 Backend Deployment
+
+### Prerequisites
+
+- GitHub repository: `https://github.com/Adam-Tout/vercel_agents_canvas_bkend`
+- OpenAI API key (starts with `sk-`)
+- Vercel account
+
+### Step 1: Copy Backend Files
+
+Copy all files from the `backend/` folder to your separate backend repository:
 
 ```bash
-npm install -g vercel
+# From your TraeHackathon directory
+cd ..
+
+# Clone your backend repo (if you haven't already)
+git clone https://github.com/Adam-Tout/vercel_agents_canvas_bkend.git
+cd vercel_agents_canvas_bkend
+
+# Copy all files from backend folder
+# Windows PowerShell:
+Copy-Item -Path ..\TraeHackathon\backend\* -Destination . -Recurse -Force
+
+# Or manually copy these files:
+# - backend/api/* → api/*
+# - backend/package.json → package.json
+# - backend/tsconfig.json → tsconfig.json
+# - backend/vercel.json → vercel.json
+# - backend/.gitignore → .gitignore (if exists)
 ```
 
-This allows you to test the deployment locally before pushing to production.
+### Step 2: Install Dependencies
 
-### Step 2: Test Locally with Vercel Dev
+```bash
+cd vercel_agents_canvas_bkend
+npm install
+```
 
-First, install the Vercel Node.js dependency:
+### Step 3: Deploy to Vercel
+
+#### Method A: Via Vercel Dashboard (Recommended)
+
+1. **Go to [vercel.com](https://vercel.com)** and sign in
+
+2. **Import Your Repository**:
+   - Click **"Add New Project"** (or find existing project)
+   - Click **"Import Git Repository"**
+   - Select: `Adam-Tout/vercel_agents_canvas_bkend`
+   - Click **"Import"**
+
+3. **Configure Project**:
+   - **Framework Preset**: Select **"Other"** (or leave as auto-detected)
+   - **Root Directory**: `./` (default)
+   - **Build Command**: Leave **empty** (no build needed for serverless functions)
+   - **Output Directory**: Leave **empty**
+   - **Install Command**: `npm install` (default)
+
+4. **Add Environment Variable** ⚠️ **CRITICAL**:
+   - Click **"Environment Variables"** section
+   - Click **"Add New"**
+   - **Key**: `OPENAI_API_KEY`
+   - **Value**: Your OpenAI API key (starts with `sk-`)
+   - **Environments**: Check all three:
+     - ✅ Production
+     - ✅ Preview  
+     - ✅ Development
+   - Click **"Save"**
+
+5. **Deploy**:
+   - Click **"Deploy"** button
+   - Wait 1-2 minutes for deployment
+   - **Copy your deployment URL** (e.g., `https://vercel_agents_canvas_bkend.vercel.app`)
+
+#### Method B: Via Vercel CLI
+
+```bash
+# In your backend repo directory
+cd vercel_agents_canvas_bkend
+
+# Install Vercel CLI (if not already installed)
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Link to your project
+vercel link
+
+# Add environment variable
+vercel env add OPENAI_API_KEY
+
+# Deploy
+vercel --prod
+```
+
+### Step 4: Verify Backend Deployment
+
+Test the API endpoint:
+
+```bash
+curl -X POST https://vercel_agents_canvas_bkend.vercel.app/api/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"messages\":[{\"role\":\"user\",\"content\":\"Hello!\"}]}"
+```
+
+You should get a JSON response with an AI-generated message.
+
+**Available Endpoints:**
+- `/api/chat` - Basic chat endpoint
+- `/api/chat-with-tools` - Chat with Canvas API tools
+- `/api/canvas-agent` - Direct Canvas API tool execution
+- `/api/workspace-agent` - Workspace-specific agent
+
+---
+
+## 🎨 Frontend Deployment
+
+### Prerequisites
+
+- Node.js 18+ installed
+- Backend deployed and URL available
+
+### Step 1: Configure Environment Variables
+
+Create a `.env` file in the root directory (copy from `env.example`):
+
+```bash
+cp env.example .env
+```
+
+Edit `.env` and set:
+
+```env
+# Backend API URL (your Vercel backend deployment)
+VITE_API_URL=https://vercel_agents_canvas_bkend.vercel.app/api
+
+# Enable backend API
+VITE_USE_BACKEND_API=true
+
+# App Configuration
+VITE_APP_NAME=Canvas AI Assistant
+VITE_APP_VERSION=1.0.0
+
+# Optional: Google OAuth
+VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
+
+# Optional: Stripe
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
+
+# Optional: Canvas API (for direct Canvas integration)
+VITE_CANVAS_API_URL=https://your-canvas-instance.instructure.com/api/v1
+```
+
+**Important**: Replace `vercel_agents_canvas_bkend.vercel.app` with your actual backend deployment URL.
+
+### Step 2: Install Dependencies
 
 ```bash
 npm install
 ```
 
-Then test your API locally:
+### Step 3: Build for Production
 
 ```bash
-vercel dev
+npm run build
 ```
 
-This will:
-- Start a local server that mimics Vercel's production environment
-- Allow you to test the `/api/chat` endpoint
-- Show any errors before deploying
+This creates a `dist/` folder with optimized production files.
 
-**Note**: You'll need to set environment variables. Create a `.env.local` file:
+### Step 4: Deploy Frontend
 
-```env
-OPENAI_API_KEY=sk-your-actual-key-here
-```
+#### Option A: Deploy to Vercel
 
-### Step 3: Deploy to Vercel
+1. **Via Vercel Dashboard**:
+   - Go to [vercel.com](https://vercel.com)
+   - Click **"Add New Project"**
+   - Import your frontend repository
+   - Configure:
+     - **Framework Preset**: Vite
+     - **Root Directory**: `./`
+     - **Build Command**: `npm run build`
+     - **Output Directory**: `dist`
+   - Add environment variables (same as `.env` file)
+   - Click **"Deploy"**
 
-#### Option A: Using Vercel CLI
-
-1. **Login to Vercel**:
+2. **Via Vercel CLI**:
    ```bash
+   npm install -g vercel
    vercel login
-   ```
-
-2. **Deploy**:
-   ```bash
-   vercel
-   ```
-   
-   Follow the prompts:
-   - Link to existing project? **No** (first time)
-   - Project name? **Enter a name** (e.g., `canvas-ai-assistant`)
-   - Directory? **Press Enter** (current directory)
-   - Override settings? **No**
-
-3. **Deploy to Production**:
-   ```bash
    vercel --prod
    ```
 
-#### Option B: Using Vercel Dashboard (Recommended for First Time)
+#### Option B: Deploy to Netlify
 
-1. **Go to [vercel.com](https://vercel.com)** and sign in
-2. **Click "Add New Project"**
-3. **Import your Git repository**:
-   - Connect GitHub/GitLab/Bitbucket
-   - Select your repository
-   - Click "Import"
+1. **Via Netlify Dashboard**:
+   - Go to [netlify.com](https://netlify.com)
+   - Click **"Add new site"** → **"Import an existing project"**
+   - Connect your repository
+   - Configure:
+     - **Build command**: `npm run build`
+     - **Publish directory**: `dist`
+   - Add environment variables in **Site settings** → **Environment variables**
+   - Click **"Deploy site"**
 
-4. **Configure Project**:
-   - Framework Preset: **Vite**
-   - Root Directory: **./** (default)
-   - Build Command: **npm run build**
-   - Output Directory: **dist**
-   - Install Command: **npm install**
-
-5. **Add Environment Variables**:
-   - Go to **Settings** → **Environment Variables**
-   - Add: `OPENAI_API_KEY` = `sk-your-actual-key-here`
-   - Select environments: **Production, Preview, Development**
-   - Click **Save**
-
-6. **Deploy**:
-   - Click **Deploy**
-   - Wait for build to complete (2-3 minutes)
-
-### Step 4: Update Frontend Environment Variables
-
-After deployment, Vercel will give you a URL like: `https://your-app.vercel.app`
-
-1. **Update your `.env` file** (for local development):
-   ```env
-   VITE_API_URL=https://your-app.vercel.app/api/chat
-   VITE_USE_BACKEND_API=true
-   ```
-
-2. **Or update in Vercel Dashboard**:
-   - Go to **Settings** → **Environment Variables**
-   - Add: `VITE_API_URL` = `https://your-app.vercel.app/api/chat`
-   - This will be used in production builds
-
-### Step 5: Verify Deployment
-
-1. **Test the API endpoint directly**:
+2. **Via Netlify CLI**:
    ```bash
-   curl -X POST https://your-app.vercel.app/api/chat \
-     -H "Content-Type: application/json" \
-     -d '{"messages":[{"role":"user","content":"Hello!"}]}'
+   npm install -g netlify-cli
+   netlify login
+   netlify deploy --prod
    ```
 
-2. **Test in your app**:
-   - Open your deployed app
-   - Try sending a message in the chat interface
-   - Check browser console for API logs
+#### Option C: Deploy to Other Platforms
 
-## 🔧 Configuration Details
+The `dist/` folder can be deployed to any static hosting service:
+- GitHub Pages
+- AWS S3 + CloudFront
+- Azure Static Web Apps
+- Firebase Hosting
+- etc.
 
-### Environment Variables
+---
 
-#### In Vercel Dashboard (Server-Side):
-- `OPENAI_API_KEY`: Your OpenAI API key (never exposed to frontend)
+## 🔗 Connecting Frontend to Backend
 
-#### In `.env` file (Client-Side):
-- `VITE_API_URL`: Your Vercel API endpoint (defaults to `/api/chat` for relative paths)
-- `VITE_USE_BACKEND_API`: Set to `false` to disable API and use demo mode
+### Update Frontend Environment Variables
+
+After deploying the backend, update your frontend `.env` file:
+
+```env
+# Use your backend deployment URL
+VITE_API_URL=https://vercel_agents_canvas_bkend.vercel.app/api
+
+# Enable backend API
+VITE_USE_BACKEND_API=true
+```
+
+**Note**: 
+- If `VITE_API_URL` is empty or not set, the frontend will use `/api` (relative path)
+- If `VITE_USE_BACKEND_API=false`, the app will use demo mode (no real AI)
 
 ### API Endpoint Structure
 
-- **Development**: `/api/chat` (relative, works with `vercel dev`)
-- **Production**: `https://your-app.vercel.app/api/chat` (absolute URL)
+The frontend automatically constructs endpoints:
+- Base URL: `VITE_API_URL` (or `/api` if not set)
+- Chat endpoint: `${VITE_API_URL}/chat`
+- Chat with tools: `${VITE_API_URL}/chat-with-tools`
+- Workspace agent: `${VITE_API_URL}/workspace-agent`
 
-### Model Configuration
+---
 
-The API uses `gpt-4o-mini` by default. To change it, edit `api/chat.ts`:
+## ✅ Verification
 
-```typescript
-const { messages, model = 'gpt-4o-mini', ... } = req.body;
+### Test Backend
+
+```bash
+# Test basic chat
+curl -X POST https://vercel_agents_canvas_bkend.vercel.app/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"Hello!"}]}'
+
+# Test workspace agent
+curl -X POST https://vercel_agents_canvas_bkend.vercel.app/api/workspace-agent \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"What is the assignment?"}],"assignment":{"name":"Test Assignment","course":"CS101","description":"Test description"}}'
 ```
 
-Or pass it from the frontend in `aiService.ts`:
+### Test Frontend
 
-```typescript
-body: JSON.stringify({
-  messages: this.messages,
-  model: 'gpt-4', // Change model here
-  ...
-})
+1. Open your deployed frontend URL
+2. Try the chat interface
+3. Check browser console for any errors
+4. Verify API calls are going to your backend URL
+
+---
+
+## 🆘 Troubleshooting
+
+### Backend Issues
+
+#### "OpenAI API key not configured"
+- **Solution**: Go to Vercel Dashboard → Your Project → Settings → Environment Variables → Add `OPENAI_API_KEY`
+- Make sure it's set for all environments (Production, Preview, Development)
+
+#### 404 Error on API endpoints
+- **Solution**: 
+  - Check that `api/chat.ts` exists in your backend repo
+  - Verify files are in `api/` directory (not `src/api/`)
+  - Check `vercel.json` configuration
+
+#### CORS Errors
+- **Solution**: The backend already includes CORS headers. If you see CORS errors:
+  - Check that your frontend URL is allowed
+  - Verify the backend is returning proper CORS headers
+
+#### Deployment fails
+- **Solution**:
+  - Check Vercel deployment logs
+  - Verify `package.json` has correct dependencies
+  - Make sure `npm install` works locally
+  - Check TypeScript compilation errors
+
+### Frontend Issues
+
+#### "API request failed"
+- **Solution**:
+  - Verify `VITE_API_URL` is set correctly in `.env`
+  - Check that backend is deployed and accessible
+  - Verify `VITE_USE_BACKEND_API=true`
+  - Check browser console for detailed error messages
+
+#### Environment variables not working
+- **Solution**:
+  - Environment variables must start with `VITE_` to be exposed to the frontend
+  - Rebuild the app after changing `.env` file (`npm run build`)
+  - For Vercel/Netlify, add variables in their dashboards, not just `.env`
+
+#### Chat not responding
+- **Solution**:
+  - Check browser console for errors
+  - Verify backend is accessible
+  - Check network tab to see if API calls are being made
+  - Verify `VITE_USE_BACKEND_API=true`
+
+### Common Issues
+
+#### Backend and Frontend on different domains
+- **Solution**: This is fine! Just make sure:
+  - `VITE_API_URL` points to your backend URL
+  - Backend has CORS enabled (already configured)
+  - Both are deployed and accessible
+
+#### Local development
+- **Solution**: For local development:
+  - Backend: Use `vercel dev` in backend directory
+  - Frontend: Use `npm run dev`
+  - Set `VITE_API_URL=http://localhost:3000/api` (or your Vercel dev port)
+
+---
+
+## 📝 Quick Reference
+
+### Backend URLs
+- **Production**: `https://vercel_agents_canvas_bkend.vercel.app`
+- **API Base**: `https://vercel_agents_canvas_bkend.vercel.app/api`
+
+### Environment Variables
+
+**Backend (Vercel)**:
+- `OPENAI_API_KEY` - Your OpenAI API key
+
+**Frontend**:
+- `VITE_API_URL` - Backend API URL
+- `VITE_USE_BACKEND_API` - Enable/disable backend (true/false)
+- `VITE_APP_NAME` - App name
+- `VITE_GOOGLE_CLIENT_ID` - Google OAuth (optional)
+- `VITE_STRIPE_PUBLISHABLE_KEY` - Stripe key (optional)
+- `VITE_CANVAS_API_URL` - Canvas API URL (optional)
+
+### Deployment Commands
+
+**Backend**:
+```bash
+cd vercel_agents_canvas_bkend
+npm install
+vercel --prod
 ```
 
-## 🐛 Troubleshooting
+**Frontend**:
+```bash
+npm install
+npm run build
+vercel --prod  # or deploy dist/ folder to your hosting service
+```
 
-### Issue: "OpenAI API key not configured"
+---
 
-**Solution**: Make sure you've added `OPENAI_API_KEY` in Vercel dashboard:
-1. Go to your project → Settings → Environment Variables
-2. Add `OPENAI_API_KEY` with your key
-3. Redeploy the project
+## 🎉 Success Checklist
 
-### Issue: CORS errors in browser
+- [ ] Backend deployed to Vercel
+- [ ] `OPENAI_API_KEY` set in Vercel environment variables
+- [ ] Backend API endpoints responding correctly
+- [ ] Frontend deployed
+- [ ] `VITE_API_URL` configured in frontend
+- [ ] `VITE_USE_BACKEND_API=true` set
+- [ ] Chat interface working
+- [ ] No console errors
+- [ ] API calls going to backend
 
-**Solution**: The API already includes CORS headers. If you still see errors:
-1. Check that your frontend URL matches the allowed origin
-2. Update CORS headers in `api/chat.ts` if needed
-
-### Issue: API returns 404
-
-**Solution**: 
-1. Check that `vercel.json` is in the root directory
-2. Verify the route is `/api/chat` (not `/api/chat.ts`)
-3. Make sure the file is at `api/chat.ts` (not `src/api/chat.ts`)
-
-### Issue: Slow responses
-
-**Solution**: 
-- This is normal for AI API calls (1-3 seconds)
-- Consider using a faster model like `gpt-4o-mini` (already default)
-- Check Vercel function logs for any errors
-
-### Issue: Local development not working
-
-**Solution**:
-1. Make sure you're running `vercel dev` (not `npm run dev`)
-2. Or set `VITE_API_URL` to your production URL in `.env`
-3. Install dependencies: `npm install`
-
-## 🔒 Security Best Practices
-
-1. **Never commit API keys**: 
-   - Use `.gitignore` to exclude `.env` files
-   - Only store keys in Vercel dashboard
-
-2. **Use environment-specific keys**:
-   - Different keys for development/production
-   - Rotate keys regularly
-
-3. **Monitor usage**:
-   - Check OpenAI dashboard for API usage
-   - Set up billing alerts
-
-4. **Rate limiting** (Future enhancement):
-   - Add rate limiting in `api/chat.ts`
-   - Use Vercel's built-in rate limiting
-
-## 📊 Monitoring
-
-### Vercel Dashboard
-- View function logs: **Deployments** → Click deployment → **Functions** tab
-- Monitor performance: **Analytics** tab
-- Check errors: **Logs** tab
-
-### OpenAI Dashboard
-- Monitor API usage: [platform.openai.com/usage](https://platform.openai.com/usage)
-- Set spending limits: **Settings** → **Billing** → **Limits**
-
-## 🎉 Next Steps
-
-1. **Custom Domain**: Add a custom domain in Vercel settings
-2. **Rate Limiting**: Implement rate limiting for production
-3. **Error Tracking**: Add Sentry or similar for error monitoring
-4. **Analytics**: Add analytics to track API usage
-5. **Caching**: Consider caching common responses
+---
 
 ## 📚 Additional Resources
 
 - [Vercel Documentation](https://vercel.com/docs)
-- [Vercel Serverless Functions](https://vercel.com/docs/functions)
 - [OpenAI API Documentation](https://platform.openai.com/docs)
-- [Vercel Environment Variables](https://vercel.com/docs/environment-variables)
+- [Vite Deployment Guide](https://vitejs.dev/guide/static-deploy.html)
 
 ---
 
-**Need Help?** Check the troubleshooting section or open an issue on GitHub.
+**Need Help?** Check the troubleshooting section or review the backend-specific guides in `backend/` folder.
+
 

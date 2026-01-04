@@ -33,7 +33,7 @@ export default async function handler(
       });
     }
 
-    // Initialize OpenAI client
+    // Initialize OpenAI client using OpenAI SDK
     const openai = new OpenAI({
       apiKey: apiKey,
     });
@@ -51,7 +51,7 @@ export default async function handler(
       userMessage: messages[messages.length - 1]?.content?.substring(0, 100) || 'N/A'
     });
 
-    // Call OpenAI API
+    // Call OpenAI API using SDK
     const startTime = Date.now();
     const completion = await openai.chat.completions.create({
       model,
@@ -92,4 +92,5 @@ export default async function handler(
     });
   }
 }
+
 

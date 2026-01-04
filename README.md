@@ -149,23 +149,15 @@ src/
 
 ### Environment Variables
 
-#### Client-Side (`.env` file):
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
-| `VITE_API_URL` | Backend API endpoint URL | No | `/api/chat` (relative) |
-| `VITE_USE_BACKEND_API` | Enable/disable backend API | No | `true` |
+| `VITE_OPENAI_API_KEY` | OpenAI API key for AI features (uses GPT-4.1-nano-2025-04-14) | No* | Demo mode |
+| `VITE_API_URL` | Backend API URL | No | `http://localhost:3001/api` |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID | No | - |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | No | - |
 | `VITE_DEBUG` | Enable debug logging | No | `false` |
 
-#### Server-Side (Vercel Dashboard):
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `OPENAI_API_KEY` | OpenAI API key (stored securely on server) | Yes* | - |
-
-\* *Required for real AI features. Set in Vercel dashboard, never in `.env` file. App works in demo mode without it.*
-
-**⚠️ Security Note**: The OpenAI API key is now stored securely on the Vercel server and never exposed to the frontend. This is the recommended production setup.
+\* *Required for real AI features. App works in demo mode without it.*
 
 ### Canvas Integration
 
@@ -185,26 +177,6 @@ src/
 
 ## 🚀 Deployment
 
-### ⚠️ Important: Secure AI Backend Setup
-
-**The AI features now use a secure backend API** instead of exposing API keys in the frontend. This is the recommended production setup.
-
-**📖 See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete step-by-step instructions.**
-
-### Quick Start
-
-1. **Deploy to Vercel** (includes serverless API):
-   ```bash
-   npm i -g vercel
-   vercel --prod
-   ```
-
-2. **Add Environment Variables in Vercel Dashboard**:
-   - `OPENAI_API_KEY`: Your OpenAI API key (server-side only)
-   - `VITE_API_URL`: Your Vercel deployment URL (optional, defaults to `/api/chat`)
-
-3. **That's it!** Your AI backend is now secure and production-ready.
-
 ### Build for Production
 
 ```bash
@@ -212,6 +184,18 @@ npm run build
 ```
 
 The production build will be in the `dist/` directory.
+
+### Deploy to Vercel
+
+1. **Install Vercel CLI**
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Deploy**
+   ```bash
+   vercel --prod
+   ```
 
 ### Deploy to Netlify
 

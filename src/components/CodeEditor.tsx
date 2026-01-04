@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { Code, Play, Save, Download } from 'lucide-react';
 
@@ -9,34 +9,90 @@ interface CodeEditorProps {
   starterCode?: string;
   onSave?: (code: string) => void;
   onCodeChange?: (code: string) => void;
+  externalContent?: string; // Allow external content updates
+  externalLanguage?: string; // Allow external language changes
 }
 
-export default function CodeEditor({ 
-  assignmentTitle, 
-  instructions, 
-  language = 'javascript',
-  starterCode = '',
-  onSave,
-  onCodeChange
-}: CodeEditorProps) {
-  const [code, setCode] = useState(starterCode);
-  const [output, setOutput] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
-  const editorRef = useRef<any>(null);
+export interface CodeEditorRef {
+  setCode: (code: string) => void;
+  getCode: () => string;
+  appendCode: (code: string) => void;
+  setLanguage: (language: string) => void;
+}
 
-  // Update editor content when language or starter code changes
-  useEffect(() => {
-    setCode(starterCode);
-    if (onCodeChange) {
-      onCodeChange(starterCode);
+const CodeEditor = forwardRef<CodeEditorRef, CodeEditorProps>(
+  ({ 
+    assignmentTitle, 
+    instructions, 
+    language: propLanguage = 'javascript',
+    starterCode = '',
+    onSave,
+    onCodeChange,
+    externalContent,
+    externalLanguage
+  }, ref) => {
+    const [code, setCode] = useState(starterCode);
+    const [language, setLanguage] = useState(propLanguage);
+    const [output, setOutput] = useState('');
+    const [isRunning, setIsRunning] = useState(false);
+    const editorRef = useRef<any>(null);
+
+    // Expose methods via ref
+    useImperativeHandle(ref, () => ({
+    setCode: (newCode: string) => {
+      setCode(newCode);
+      if (onCodeChange) onCodeChange(newCode);
+      if (editorRef.current) {
+        editorRef.current.setValue(newCode);
+      }
+    },
+    getCode: () => code,
+    appendCode: (newCode: string) => {
+      const updated = code + (code ? '\n\n' : '') + newCode;
+      setCode(updated);
+      if (onCodeChange) onCodeChange(updated);
+      if (editorRef.current) {
+        editorRef.current.setValue(updated);
+      }
+    },
+      setLanguage: (newLanguage: string) => {
+        setLanguage(newLanguage);
+      }
+    }));
+
+    // Handle external content updates
+    useEffect(() => {
+    if (externalContent !== undefined && externalContent !== code) {
+      setCode(externalContent);
+      if (onCodeChange) onCodeChange(externalContent);
+      if (editorRef.current) {
+        editorRef.current.setValue(externalContent);
+      }
     }
-  }, [language, starterCode]);
+  }, [externalContent]);
 
-  const handleEditorDidMount = (editor: any) => {
-    editorRef.current = editor;
-  };
+  // Handle external language changes
+  useEffect(() => {
+    if (externalLanguage && externalLanguage !== language) {
+      setLanguage(externalLanguage);
+    }
+    }, [externalLanguage]);
 
-  const handleRunCode = () => {
+    // Update editor content when language or starter code changes
+    useEffect(() => {
+    if (starterCode && !externalContent) {
+      setCode(starterCode);
+      if (onCodeChange) {
+        onCodeChange(starterCode);
+      }
+    }
+    }, [language, starterCode]);
+
+    const handleEditorDidMount = (editor: any) => {
+      editorRef.current = editor;
+    };
+
+    const handleRunCode = () => {
     setIsRunning(true);
     setOutput('Running code...\n');
     
@@ -44,10 +100,10 @@ export default function CodeEditor({
     setTimeout(() => {
       setOutput(`Code execution completed!\n\nNote: In a full implementation, this would execute your ${language} code on a secure backend and return the actual results.`);
       setIsRunning(false);
-    }, 1500);
-  };
+      }, 1500);
+    };
 
-  const handleSave = () => {
+    const handleSave = () => {
     if (onSave) {
       onSave(code);
     }
@@ -70,11 +126,11 @@ export default function CodeEditor({
     a.download = `${assignmentTitle.replace(/\s+/g, '_')}.${extension}`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
 
-  return (
+    return (
     <div className="h-full bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col">
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -161,4 +217,8 @@ export default function CodeEditor({
       </div>
     </div>
   );
-}
+});
+
+CodeEditor.displayName = 'CodeEditor';
+
+export default CodeEditor;

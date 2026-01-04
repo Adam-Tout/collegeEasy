@@ -1,0 +1,20 @@
+{
+  "name": "vercel_agents_canvas_bkend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend API for Canvas AI Assistant - Secure OpenAI integration",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "openai": "^6.3.0",
+    "axios": "^1.12.2"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0",
+    "@types/node": "^22.15.30",
+    "typescript": "~5.8.3"
+  }
+}
+

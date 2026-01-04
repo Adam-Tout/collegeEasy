@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, FileText, Code } from 'lucide-react';
-import DocumentEditor from './DocumentEditor';
-import CodeEditor from './CodeEditor';
-import ChatInterface from './ChatInterface';
+import DocumentEditor, { DocumentEditorRef } from './DocumentEditor';
+import CodeEditor, { CodeEditorRef } from './CodeEditor';
+import WorkspaceChatInterface from './WorkspaceChatInterface';
 import { CanvasAssignment, CanvasCourse } from '../types/canvas';
 import { AssignmentInfo } from '../services/aiService';
 
@@ -17,6 +17,8 @@ interface AssignmentWorkspaceProps {
 export default function AssignmentWorkspace({ assignment, isOpen, onClose, courses = [], asModal = true }: AssignmentWorkspaceProps) {
   const [activeTab, setActiveTab] = useState<'document' | 'code'>('document');
   const [workInProgress, setWorkInProgress] = useState<string>('');
+  const documentEditorRef = useRef<DocumentEditorRef>(null);
+  const codeEditorRef = useRef<CodeEditorRef>(null);
 
   if (!assignment || (asModal && !isOpen)) return null;
 
@@ -127,6 +129,7 @@ export default function AssignmentWorkspace({ assignment, isOpen, onClose, cours
           <ResizablePane>
             {activeTab === 'document' ? (
               <DocumentEditor
+                ref={documentEditorRef}
                 assignmentTitle={assignment.name}
                 instructions={assignment.description || 'No instructions provided.'}
                 onSave={(content) => {
@@ -136,6 +139,7 @@ export default function AssignmentWorkspace({ assignment, isOpen, onClose, cours
               />
             ) : (
               <CodeEditor
+                ref={codeEditorRef}
                 assignmentTitle={assignment.name}
                 instructions={assignment.description || 'No instructions provided.'}
                 language={selectedLanguage}
@@ -148,14 +152,68 @@ export default function AssignmentWorkspace({ assignment, isOpen, onClose, cours
             )}
           </ResizablePane>
 
-          {/* Right: AI Assistant with assignment-aware context */}
+          {/* Right: Workspace AI Assistant - Specialized for writing and coding */}
           <div className="border-l border-gray-200 h-full flex-1 min-w-[260px]">
-            <ChatInterface 
-              assignments={[currentAssignmentInfo]}
-              courses={courses.map(c => ({ id: c.id, name: c.name, course_code: c.course_code }))}
-              currentAssignment={currentAssignmentInfo}
+            <WorkspaceChatInterface
+              assignment={currentAssignmentInfo}
               workInProgress={workInProgress}
-              storageKey={`chatMessages-assignment-${assignment.id}`}
+              currentMode={activeTab}
+              currentLanguage={selectedLanguage}
+              storageKey={`workspace-chat-${assignment.id}`}
+              onWriteDocument={(content) => {
+                if (documentEditorRef.current) {
+                  const existingContent = documentEditorRef.current.getContent();
+                  if (existingContent && existingContent.trim().length > 0) {
+                    // Append to existing content
+                    documentEditorRef.current.appendContent(content);
+                  } else {
+                    // Replace if empty
+                    documentEditorRef.current.setContent(content);
+                  }
+                }
+              }}
+              onWriteCode={async (content, language) => {
+                // If not in code mode, switch first and wait
+                if (activeTab !== 'code') {
+                  if (!isCodingProject) {
+                    setIsCodingProject(true);
+                  }
+                  setActiveTab('code');
+                  if (language && language !== selectedLanguage) {
+                    setSelectedLanguage(language as 'javascript' | 'python' | 'cpp');
+                  }
+                  // Wait for tab switch and editor to be ready
+                  await new Promise(resolve => setTimeout(resolve, 1500));
+                } else if (language && language !== selectedLanguage) {
+                  setSelectedLanguage(language as 'javascript' | 'python' | 'cpp');
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                // Check existing content and append if there's already code
+                if (codeEditorRef.current) {
+                  const existingCode = codeEditorRef.current.getCode();
+                  if (existingCode && existingCode.trim().length > 0 && !existingCode.includes('// Start coding here')) {
+                    // Append to existing code
+                    codeEditorRef.current.appendCode(content);
+                  } else {
+                    // Replace if empty or just starter code
+                    codeEditorRef.current.setCode(content);
+                  }
+                  codeEditorRef.current.setLanguage(language);
+                }
+              }}
+              onSwitchToDocument={() => {
+                setActiveTab('document');
+              }}
+              onSwitchToCode={(language) => {
+                if (!isCodingProject) {
+                  setIsCodingProject(true);
+                }
+                setActiveTab('code');
+                if (language) {
+                  setSelectedLanguage(language as 'javascript' | 'python' | 'cpp');
+                }
+              }}
             />
           </div>
         </div>

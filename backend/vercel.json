@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/chat.ts": {
+      "maxDuration": 30
+    },
+    "api/chat-with-tools.ts": {
+      "maxDuration": 30
+    },
+    "api/canvas-agent.ts": {
+      "maxDuration": 30
+    },
+    "api/workspace-agent.ts": {
+      "maxDuration": 30
+    }
+  }
+}
+

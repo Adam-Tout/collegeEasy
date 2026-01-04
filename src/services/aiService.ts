@@ -3,7 +3,9 @@ import { demoCourses, getDemoAssignments } from '../data/demoData';
 // Get API endpoint from environment variable or use default
 // In production, this should point to your Vercel deployment
 // In development, it will use the local Vercel dev server or proxy
-const API_URL = import.meta.env.VITE_API_URL || '/api/chat';
+const BASE_API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = BASE_API_URL.endsWith('/chat') ? BASE_API_URL : `${BASE_API_URL}/chat`;
+const API_URL_WITH_TOOLS = BASE_API_URL.endsWith('/chat-with-tools') ? BASE_API_URL : `${BASE_API_URL}/chat-with-tools`;
 const USE_BACKEND_API = import.meta.env.VITE_USE_BACKEND_API !== 'false'; // Default to true
 
 // Log API configuration on module load
@@ -141,18 +143,27 @@ Always be encouraging and helpful. If you don't have specific information about 
     try {
       console.log('[AIService] ========================================');
       console.log('[AIService] REAL API MODE - Making backend API call...');
-      console.log('[AIService] Request details:', {
-        endpoint: API_URL,
-        model: 'gpt-4o-mini',
-        messageCount: this.messages.length,
-        userMessage: userMessage.substring(0, 100) + (userMessage.length > 100 ? '...' : ''),
-        hasContext: !!this.context.courses || !!this.context.assignments || !!this.context.currentAssignment
-      });
       
       const startTime = Date.now();
       
+      // Get Canvas auth if available
+      const canvasAuth = this.getCanvasAuth();
+      
+      // Use chat-with-tools endpoint if Canvas auth is available, otherwise use regular chat
+      const endpoint = canvasAuth ? API_URL_WITH_TOOLS : API_URL;
+      
+      console.log('[AIService] ========================================');
+      console.log('[AIService] 📤 SENDING TO BACKEND:');
+      console.log('[AIService] Endpoint:', endpoint);
+      console.log('[AIService] Message count:', this.messages.length);
+      console.log('[AIService] Full conversation history:');
+      this.messages.forEach((m, idx) => {
+        console.log(`  ${idx + 1}. [${m.role.toUpperCase()}]: ${m.content.substring(0, 150)}${m.content.length > 150 ? '...' : ''}`);
+      });
+      console.log('[AIService] ========================================');
+      
       // Call backend API instead of OpenAI directly
-      const response = await fetch(API_URL, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,8 +171,11 @@ Always be encouraging and helpful. If you don't have specific information about 
         body: JSON.stringify({
           messages: this.messages,
           model: 'gpt-4o-mini', // Using a more standard model name
-          max_tokens: 500,
+          max_tokens: 1000, // Increased for function calling responses
           temperature: 0.7,
+          useCanvasTools: !!canvasAuth, // Enable Canvas tools if auth available
+          canvasToken: canvasAuth?.accessToken,
+          canvasDomain: canvasAuth?.domain,
         }),
       });
 
@@ -177,6 +191,9 @@ Always be encouraging and helpful. If you don't have specific information about 
       
       console.log('[AIService] ✅ Backend API response received:');
       console.log('[AIService] Duration:', `${duration}ms`);
+      console.log('[AIService] Endpoint used:', endpoint);
+      console.log('[AIService] Canvas auth:', canvasAuth ? '✅ Present' : '❌ Not available');
+      console.log('[AIService] Function used:', data.functionUsed?.name || 'None');
       console.log('[AIService] Response length:', assistantMessage.length, 'characters');
       console.log('[AIService] Full response:', assistantMessage);
       console.log('[AIService] Usage:', data.usage || 'N/A');
@@ -259,13 +276,29 @@ Always be encouraging and helpful. If you don't have specific information about 
     this.messages = [{
       role: 'system',
       content: `You are a helpful Canvas student assistant. You can help students with:
- - Finding information about their assignments, due dates, and courses
- - Explaining assignment instructions and requirements
- - Helping organize their study schedule
- - Providing guidance on how to approach assignments
- - Answering questions about their academic progress
+- Finding information about their assignments, due dates, and courses
+- Explaining assignment instructions and requirements
+- Helping organize their study schedule
+- Providing guidance on how to approach assignments
+- Answering questions about their academic progress
  
 Always be encouraging and helpful. If you don't have specific information about an assignment, ask the student to provide more details.`
     }];
+  }
+
+  // Get Canvas authentication from localStorage
+  private getCanvasAuth(): { accessToken: string; domain: string } | null {
+    try {
+      const authStr = localStorage.getItem('canvas_auth');
+      if (authStr) {
+        const auth = JSON.parse(authStr);
+        if (auth.accessToken && auth.domain) {
+          return auth;
+        }
+      }
+    } catch (e) {
+      console.warn('[AIService] Failed to get Canvas auth:', e);
+    }
+    return null;
   }
 }
