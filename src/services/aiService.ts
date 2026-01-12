@@ -1,8 +1,8 @@
 import { demoCourses, getDemoAssignments } from '../data/demoData';
 
 // Get API endpoint from environment variable or use default
-// In production, this should point to your Vercel deployment
-// In development, it will use the local Vercel dev server or proxy
+// In production, this should point to your cloud API endpoint (Lambda, etc.)
+// In development, set VITE_USE_BACKEND_API=false for demo mode
 const BASE_API_URL = import.meta.env.VITE_API_URL || '/api';
 const API_URL = BASE_API_URL.endsWith('/chat') ? BASE_API_URL : `${BASE_API_URL}/chat`;
 const API_URL_WITH_TOOLS = BASE_API_URL.endsWith('/chat-with-tools') ? BASE_API_URL : `${BASE_API_URL}/chat-with-tools`;
