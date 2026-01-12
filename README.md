@@ -185,17 +185,14 @@ npm run build
 
 The production build will be in the `dist/` directory.
 
-### Deploy to Vercel
+### Deploy to AWS (Recommended)
 
-1. **Install Vercel CLI**
-   ```bash
-   npm i -g vercel
-   ```
-
-2. **Deploy**
-   ```bash
-   vercel --prod
-   ```
+See `CLOUD_ACCOUNT_PAYMENT_GUIDE.md` for complete AWS deployment instructions including:
+- S3 + CloudFront for static hosting
+- Lambda + API Gateway for backend API
+- DynamoDB for user data
+- Cognito for authentication
+- Stripe for payments
 
 ### Deploy to Netlify
 
